@@ -110,8 +110,13 @@ def genTruncatedSignals(text):
         signals[signame] += sigcount
     return signals
 
+def genSheet(reports):
+    out = pd.DataFrame(reports)
+    out.to_excel("out-" + sys.argv[1] + ".xlsx")
+
+
 if len(sys.argv) < 3:
-    print("Please specify an output mode (full or trunc), and at least one report filename to generate a spreadsheet for.")
+    print("Please specify an output mode (full or trunc, or text to output txt files for each pdf), and at least one report filename to generate a spreadsheet for.")
     exit(-1)
 
 reports = []
@@ -125,11 +130,14 @@ for fn in filenames:
     pdf_text = re.sub(r"VIDEO URL:[\s]+https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)", '', raw)
     if sys.argv[1] == "full":
         reports.append(genSignals(pdf_text))
+        genSheet(reports)
     elif sys.argv[1] == "trunc":
         reports.append(genTruncatedSignals(pdf_text))
+        genSheet(reports)
+    elif sys.argv[1] == "text":
+        out = open(re.sub(".pdf", ".txt", fn), "w")
+        out.write(raw)
+        out.close()
     else:
         print("Please use a valid output mode")
         exit(-1)
-
-out = pd.DataFrame(reports)
-out.to_excel("out-" + sys.argv[1] + ".xlsx")
